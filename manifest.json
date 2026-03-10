@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Mix→Playlist",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Automatically convert any YouTube Mix into a real saved, shareable playlist using your YouTube account.",
   "permissions": ["activeTab", "scripting", "storage", "identity"],
   "host_permissions": [
