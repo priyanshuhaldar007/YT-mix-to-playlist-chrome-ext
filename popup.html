@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mix→Playlist</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --red: #ff3b3b;
+      --red-dim: #ff3b3b22;
+      --green: #00e676;
+      --green-dim: #00e67622;
+      --blue: #4285f4;
+      --yellow: #ffb300;
+      --text: #f0f0f0;
+      --muted: #666;
+    }
+
+    html, body {
+      width: 390px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .header {
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; overflow: hidden;
+    }
+    .header::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, #ff3b3b33 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 30px; height: 30px; background: var(--red); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .logo-text { font-size: 17px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo-text span { color: var(--red); }
+    .logo-sub { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; }
+
+    .user-pill { display: flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px 4px 6px; cursor: pointer; transition: background 0.15s; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); max-width: 130px; }
+    .user-pill:hover { background: var(--surface2); }
+    .user-avatar { width: 20px; height: 20px; border-radius: 50%; background: var(--surface2); flex-shrink: 0; object-fit: cover; }
+    .user-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .status-bar { margin: 14px 20px 0; padding: 9px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; font-family: 'Space Mono', monospace; font-size: 11px; display: flex; align-items: center; gap: 8px; color: var(--muted); min-height: 36px; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex-shrink: 0; transition: background 0.3s; }
+    .status-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+    .status-dot.red   { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+    .status-dot.blue  { background: var(--blue);  box-shadow: 0 0 6px var(--blue); }
+    .status-dot.pulse { animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .body { padding: 14px 20px 18px; }
+
+    .btn { width: 100%; padding: 11px 18px; border: none; border-radius: 8px; font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none !important; }
+    .btn-red   { background: var(--red); color: #fff; }
+    .btn-red:not(:disabled):hover   { background: #ff5555; transform: translateY(-1px); }
+    .btn-google { background: #fff; color: #333; border: 1px solid #ddd; font-family: 'Space Mono', monospace; font-size: 12px; gap: 10px; }
+    .btn-google:not(:disabled):hover { background: #f5f5f5; transform: translateY(-1px); }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); font-size: 12px; }
+    .btn-secondary:not(:disabled):hover { background: #2a2a2a; }
+    .btn-green { background: var(--green); color: #000; font-size: 13px; }
+    .btn-green:not(:disabled):hover { background: #33ff8a; transform: translateY(-1px); }
+    .btn + .btn, .btn + .btn-xs-row { margin-top: 8px; }
+
+    .google-g { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .setup-banner { background: #ffb30018; border: 1px solid #ffb30044; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--yellow); line-height: 1.6; }
+    .setup-banner strong { display: block; margin-bottom: 4px; font-size: 12px; }
+
+    .signin-hero { text-align: center; padding: 20px 0 18px; }
+    .signin-hero .big-icon { font-size: 40px; margin-bottom: 10px; }
+    .signin-hero h2 { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+    .signin-hero p { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; line-height: 1.6; }
+
+    .empty-state { text-align: center; padding: 24px 12px; }
+    .empty-icon { font-size: 32px; margin-bottom: 8px; }
+    .empty-title { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+    .empty-desc { font-size: 11px; color: var(--muted); line-height: 1.5; font-family: 'Space Mono', monospace; }
+
+    .section-label { font-size: 10px; font-family: 'Space Mono', monospace; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 7px; }
+    .tracks-header { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 7px; }
+    .count-badge { background: var(--red-dim); color: var(--red); border: 1px solid var(--red); padding: 2px 8px; border-radius: 20px; font-family: 'Space Mono', monospace; font-size: 10px; }
+
+    .tracks-list { max-height: 170px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+    .tracks-list::-webkit-scrollbar { width: 4px; }
+    .tracks-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    .track-item { display: flex; align-items: center; gap: 9px; padding: 7px 11px; border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    .track-item:last-child { border-bottom: none; }
+    .track-item:hover { background: var(--surface2); }
+    .track-num { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); width: 16px; flex-shrink: 0; text-align: right; }
+    .track-thumb { width: 30px; height: 30px; border-radius: 4px; object-fit: cover; background: var(--surface2); flex-shrink: 0; }
+    .track-ph { width: 30px; height: 30px; border-radius: 4px; background: var(--surface2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .track-info { flex: 1; min-width: 0; }
+    .track-title { font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-artist { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .track-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 2px 4px; border-radius: 4px; transition: color 0.1s, background 0.1s; flex-shrink: 0; }
+    .track-remove:hover { color: var(--red); background: var(--red-dim); }
+
+    .config-row { margin-top: 12px; }
+    .name-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; color: var(--text); font-family: 'Syne', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    .name-input:focus { border-color: var(--red); }
+    .name-input::placeholder { color: var(--muted); }
+    .privacy-row { display: flex; gap: 7px; margin-top: 8px; }
+    .privacy-opt { flex: 1; padding: 7px 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 7px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; text-align: center; transition: all 0.15s; }
+    .privacy-opt:hover { border-color: #444; color: var(--text); }
+    .privacy-opt.active { border-color: var(--red); color: var(--red); background: var(--red-dim); }
+
+    .btn-xs-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-top: 8px; }
+    .btn-xs { padding: 8px 10px; border-radius: 7px; font-family: 'Space Mono', monospace; font-size: 10px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .btn-xs:hover { background: #2a2a2a; }
+
+    .progress-label { display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+    .progress-bar-wrap { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+    .progress-bar-fill { height: 100%; background: var(--green); border-radius: 3px; width: 0%; transition: width 0.3s ease; box-shadow: 0 0 8px var(--green); }
+    .progress-status { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--muted); text-align: center; }
+
+    #successSection { text-align: center; padding: 14px 0; }
+    .success-icon { font-size: 44px; margin-bottom: 10px; }
+    .success-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; color: var(--green); }
+    .success-sub { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-bottom: 14px; line-height: 1.5; }
+    .playlist-url-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 13px; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--blue); word-break: break-all; text-align: left; cursor: pointer; transition: background 0.15s; margin-bottom: 12px; }
+    .playlist-url-box:hover { background: var(--surface2); }
+
+    .spinner { width: 13px; height: 13px; border: 2px solid #fff4; border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; flex-shrink: 0; }
+    .spinner.dark { border-color: #0002; border-top-color: #000; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .toast { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%) translateY(40px); background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--green); opacity: 0; transition: all 0.25s; white-space: nowrap; pointer-events: none; z-index: 999; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .mt8 { margin-top: 8px; }
+    .mt12 { margin-top: 12px; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="logo">
+      <div class="logo-icon">▶</div>
+      <div class="logo-text">Mix<span>→</span>List</div>
+    </div>
+    <div class="logo-sub">YouTube Mix converter</div>
+  </div>
+  <div class="user-pill hidden" id="userPill">
+    <img class="user-avatar" id="userAvatar" src="" alt="" />
+    <span class="user-name" id="userName">…</span>
+  </div>
+</div>
+
+<div class="status-bar" id="statusBar">
+  <div class="status-dot pulse" id="statusDot"></div>
+  <span id="statusText">Initialising…</span>
+</div>
+
+<div class="body">
+
+  <!-- Setup warning -->
+  <div class="setup-banner hidden" id="setupBanner">
+    <strong>⚠️ Setup Required</strong>
+    Open <code>manifest.json</code> and replace <code>YOUR_CLIENT_ID_HERE</code> with your OAuth Client ID.
+    See <strong>SETUP.md</strong> for full instructions.
+  </div>
+
+  <!-- Screen 1: Sign in -->
+  <div id="signInSection">
+    <div class="signin-hero">
+      <div class="big-icon">🔐</div>
+      <h2>Sign in to get started</h2>
+      <p>Mix→List needs access to your YouTube<br>account to create playlists on your behalf.</p>
+    </div>
+    <button class="btn btn-google" id="btnSignIn">
+      <svg class="google-g" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Sign in with Google
+    </button>
+  </div>
+
+  <!-- Screen 2: Main (scan + configure) -->
+  <div id="mainSection" class="hidden">
+
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">🎵</div>
+      <div class="empty-title">No Mix detected</div>
+      <div class="empty-desc">Navigate to a YouTube Mix or Radio<br>playlist, then click Scan Queue.</div>
+    </div>
+
+    <button class="btn btn-red" id="btnScan">
+      <span id="scanLabel">Scan Queue</span>
+      <div class="spinner hidden" id="scanSpinner"></div>
+    </button>
+
+    <div id="tracksSection" class="hidden">
+      <div class="tracks-header">
+        <span class="section-label">Tracks found</span>
+        <span class="count-badge" id="countBadge">0</span>
+      </div>
+      <div class="tracks-list" id="tracksList"></div>
+
+      <div class="config-row">
+        <div class="section-label" style="margin-bottom:6px">Playlist name</div>
+        <input type="text" class="name-input" id="playlistName" placeholder="My Mix Playlist" />
+      </div>
+
+      <div class="config-row">
+        <div class="section-label" style="margin-bottom:6px">Privacy</div>
+        <div class="privacy-row" id="privacyRow">
+          <div class="privacy-opt active" data-val="public">🌐 Public</div>
+          <div class="privacy-opt" data-val="unlisted">🔗 Unlisted</div>
+          <div class="privacy-opt" data-val="private">🔒 Private</div>
+        </div>
+      </div>
+
+      <button class="btn btn-green mt12" id="btnCreate">
+        <span id="createLabel">✨ Create Playlist on YouTube</span>
+        <div class="spinner dark hidden" id="createSpinner"></div>
+      </button>
+
+      <div class="btn-xs-row">
+        <button class="btn-xs" id="btnCopyLinks">📋 Copy Links</button>
+        <button class="btn-xs" id="btnCopyTitles">📝 Copy Titles</button>
+        <button class="btn-xs" id="btnExportCSV">📊 CSV</button>
+        <button class="btn-xs" id="btnExportJSON">{ } JSON</button>
+      </div>
+
+      <button class="btn btn-secondary mt8" id="btnRescan">↺ Re-scan Queue</button>
+    </div>
+  </div>
+
+  <!-- Screen 3: Progress -->
+  <div id="progressSection" class="hidden">
+    <div class="section-label" style="margin-bottom:10px;margin-top:4px">Creating playlist…</div>
+    <div class="progress-label">
+      <span id="progressText">Adding tracks…</span>
+      <span id="progressCount">0 / 0</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-status" id="progressStatus">Please wait — do not close this popup.</div>
+  </div>
+
+  <!-- Screen 4: Success -->
+  <div id="successSection" class="hidden">
+    <div class="success-icon">🎉</div>
+    <div class="success-title">Playlist Created!</div>
+    <div class="success-sub" id="successSub"></div>
+    <div class="playlist-url-box" id="playlistUrlBox" title="Click to copy URL"></div>
+    <button class="btn btn-green" id="btnOpenPlaylist">▶ Open in YouTube</button>
+    <button class="btn btn-secondary mt8" id="btnStartOver">+ Convert Another Mix</button>
+  </div>
+
+  <button class="btn btn-secondary mt8 hidden" id="btnSignOut" style="font-size:11px;font-family:'Space Mono',monospace;color:var(--muted)">Sign out</button>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="popup.js"></script>
+</body>
+</html>
